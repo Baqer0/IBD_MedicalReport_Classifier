@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>IBD Medical Report Classifier</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="text-center">IBD Medical Report Classifier</h1>
+            
+            <form class="p-3 text-center" action="/" method="post" enctype="multipart/form-data">
+                <input class="form-control" type="file" name="report">
+                <input class="btn btn-primary mt-3" type="submit" value="Classify">
+            </form>
+
+            <!-- Display the prediction result if available -->
+            {% if prediction %}
+                <p class="text-center mt-4">The report is classified as: <strong>{{ prediction }}</strong></p>
+            {% endif %}
+        </div>
+    </body>
+</html>
