@@ -11,6 +11,11 @@ from bs4 import BeautifulSoup
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
 
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
+
+
 # Initialize Flask app
 app = Flask(__name__)
 
