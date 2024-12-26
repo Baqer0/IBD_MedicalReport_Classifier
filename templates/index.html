@@ -1,22 +1,32 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>IBD Medical Report Classifier</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet">
-    </head>
-    <body>
-        <div class="container">
-            <h1 class="text-center">IBD Medical Report Classifier</h1>
-            
-            <form class="p-3 text-center" action="/" method="post" enctype="multipart/form-data">
-                <input class="form-control" type="file" name="report">
-                <input class="btn btn-primary mt-3" type="submit" value="Classify">
-            </form>
-
-            <!-- Display the prediction result if available -->
-            {% if prediction %}
-                <p class="text-center mt-4">The report is classified as: <strong>{{ prediction }}</strong></p>
-            {% endif %}
+<head>
+    <title>IBD Medical Report Classifier</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mt-5">IBD Medical Report Classifier</h1>
+        
+        <div class="card mt-5">
+            <div class="card-body">
+                <h5 class="card-title text-center">Upload Medical Report</h5>
+                <form class="p-3 text-center" action="/" method="post" enctype="multipart/form-data">
+                    <input class="form-control" type="file" name="report" required>
+                    <input class="btn btn-primary mt-3" type="submit" value="Classify">
+                </form>
+            </div>
         </div>
-    </body>
+
+        <!-- Display the prediction result or error if available -->
+        {% if prediction %}
+            <p class="text-center text-success mt-4">The report is classified as: <strong>{{ prediction }}</strong></p>
+        {% elif error %}
+            <p class="text-center text-danger mt-4">{{ error }}</p>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.min.js"></script>
+</body>
 </html>
