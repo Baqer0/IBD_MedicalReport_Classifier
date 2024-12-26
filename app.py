@@ -15,6 +15,11 @@ nltk.download('punkt')
 nltk.download('stopwords')
 nltk.download('wordnet')
 
+
+# Ensure directories exist
+os.makedirs('uploads', exist_ok=True)
+os.makedirs('instance', exist_ok=True)
+
 # Initialize Flask app
 app = Flask(__name__)
 
