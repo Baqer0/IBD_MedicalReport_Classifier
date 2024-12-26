@@ -15,12 +15,11 @@ nltk.download('punkt')
 nltk.download('stopwords')
 nltk.download('wordnet')
 
-
 # Initialize Flask app
 app = Flask(__name__)
 
 # Configure upload folder
-UPLOAD_FOLDER = os.path.join(app.instance_path, 'uploads')
+UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", default="./uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -32,8 +31,8 @@ TFIDF_PATH = './tfidf.pkl'
 svm_clf = joblib.load(MODEL_PATH)
 tfidf = joblib.load(TFIDF_PATH)
 
-# Set Tesseract binary path if necessary (adjust for Render)
-pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
+# Set Tesseract binary path from environment variable
+pytesseract.pytesseract.tesseract_cmd = os.getenv('TESSERACT_PATH', '/usr/bin/tesseract')
 
 @app.route('/', methods=['GET', 'POST'])
 def predict():
@@ -107,4 +106,5 @@ def cleaner(report):
     return " ".join(tokens)
 
 if __name__ == '__main__':
-    app.run(port=3000, debug=True)
+    port = int(os.getenv("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
