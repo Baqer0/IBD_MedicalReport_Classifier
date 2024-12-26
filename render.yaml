@@ -2,10 +2,11 @@ services:
   - type: web
     name: IBD-Medical-Report-Classifier
     env: python
-    buildCommand: |
-      pip install -r requirements.txt
-      sudo apt-get update && sudo apt-get install -y tesseract-ocr
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python app.py"
+    build:
+      systemPackages:
+        - tesseract-ocr
     plan: free
     envVars:
       - key: FLASK_ENV
