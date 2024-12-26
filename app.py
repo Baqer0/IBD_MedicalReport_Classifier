@@ -19,10 +19,13 @@ if not os.path.exists(nltk_data_dir):
 # Set the NLTK data path
 nltk.data.path.append(nltk_data_dir)
 
-# Download required NLTK resources
-nltk.download('punkt', download_dir=nltk_data_dir)
-nltk.download('stopwords', download_dir=nltk_data_dir)
-nltk.download('wordnet', download_dir=nltk_data_dir)
+# Download required NLTK resources if not already present
+nltk_resources = ['punkt', 'stopwords', 'wordnet']
+for resource in nltk_resources:
+    try:
+        nltk.data.find(f'tokenizers/{resource}')
+    except LookupError:
+        nltk.download(resource, download_dir=nltk_data_dir)
 
 # Initialize Flask app
 app = Flask(__name__)
