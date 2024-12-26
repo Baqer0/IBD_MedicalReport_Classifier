@@ -15,6 +15,19 @@ nltk.download('punkt')
 nltk.download('stopwords')
 nltk.download('wordnet')
 
+# Set the NLTK data directory
+nltk_data_dir = os.path.join(os.getcwd(), 'nltk_data')
+if not os.path.exists(nltk_data_dir):
+    os.makedirs(nltk_data_dir)
+
+# Set the environment variable to use this directory for NLTK data
+nltk.data.path.append(nltk_data_dir)
+
+# Download the required resources (only once)
+nltk.download('punkt', download_dir=nltk_data_dir)
+nltk.download('stopwords', download_dir=nltk_data_dir)
+nltk.download('wordnet', download_dir=nltk_data_dir)
+
 # Initialize Flask app
 app = Flask(__name__)
 
