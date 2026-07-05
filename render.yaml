@@ -2,12 +2,13 @@ services:
   - type: web
     name: IBD-Medical-Report-Classifier
     env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "python app.py"
-    build:
-      systemPackages:
-        - tesseract-ocr
     plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app"
+    systemPackages:
+      - tesseract-ocr
     envVars:
       - key: FLASK_ENV
         value: production
+      - key: TESSERACT_PATH
+        value: /usr/bin/tesseract
