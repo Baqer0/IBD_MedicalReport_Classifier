@@ -16,9 +16,10 @@ os.makedirs(nltk_data_dir, exist_ok=True)
 nltk.data.path.insert(0, nltk_data_dir)
 
 for resource, path in [
-    ('punkt',     'tokenizers/punkt'),
-    ('stopwords', 'corpora/stopwords'),
-    ('wordnet',   'corpora/wordnet'),
+    ('punkt',       'tokenizers/punkt'),
+    ('punkt_tab',   'tokenizers/punkt_tab'),
+    ('stopwords',   'corpora/stopwords'),
+    ('wordnet',     'corpora/wordnet'),
 ]:
     try:
         nltk.data.find(path)
