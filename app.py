@@ -98,7 +98,12 @@ def predict():
             cleaned = cleaner(text)
             transformed = tfidf.transform([cleaned])
             prediction = svm_clf.predict(transformed)
-            result = 'IBD' if prediction[0] == 'yes' else 'Non-IBD'
+            
+            app.logger.info(f"RAW PREDICTION: {prediction}")
+            app.logger.info(f"MODEL CLASSES: {svm_clf.classes_}")
+            
+            result = str(prediction[0])
+
 
         except Exception as e:
             app.logger.error(f"Prediction error: {e}")
