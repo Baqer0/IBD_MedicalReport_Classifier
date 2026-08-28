@@ -4,87 +4,186 @@ import nltk
 from bs4 import BeautifulSoup
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn import svm
+from sklearn.metrics import (
+accuracy_score,
+classification_report,
+confusion_matrix
+)
+
 from imblearn.over_sampling import SMOTE
+
 import joblib
 
-# Ensure NLTK resources are downloaded
+── NLTK resources ────────────────────────────────────────────────────────────
+
 nltk.download('punkt')
+nltk.download('punkt_tab')
 nltk.download('stopwords')
 nltk.download('wordnet')
 
-#------------------------------------------------------------------------------------------------------
-# Function to clean the medical reports
+── Text cleaning ─────────────────────────────────────────────────────────────
+
 def cleaner(report):
-    soup = BeautifulSoup(report, 'lxml')  # Remove HTML entities
-    souped = soup.get_text()
-    re1 = re.sub(r"(@|http://|https://|www|\\x)\S*", " ", souped)  # Remove @mentions, URLs, etc.
-    re2 = re.sub("[^A-Za-z]+", " ", re1)  # Remove non-alphabetic characters
 
-    tokens = nltk.word_tokenize(re2)
-    lower_case = [t.lower() for t in tokens]
+soup = BeautifulSoup(report, 'lxml')
+text = soup.get_text()
 
-    stop_words = set(stopwords.words('english'))
-    filtered_result = list(filter(lambda l: l not in stop_words, lower_case))
+text = re.sub(
+    r"(@|http://|https://|www|\\x)\S*",
+    " ",
+    text
+)
 
-    wordnet_lemmatizer = WordNetLemmatizer()
-    lemmas = [wordnet_lemmatizer.lemmatize(t) for t in filtered_result]
-    return " ".join(lemmas)
+text = re.sub(
+    "[^A-Za-z]+",
+    " ",
+    text
+)
 
-#------------------------------------------------------------------------------------------------------
-# Load the dataset
-data_path = "./Data/Medical_reports(IBD-NonIBD).xlsx"  # Use relative path
+tokens = nltk.word_tokenize(text)
+
+tokens = [
+    token.lower()
+    for token in tokens
+]
+
+stop_words = set(stopwords.words('english'))
+
+tokens = [
+    token
+    for token in tokens
+    if token not in stop_words
+]
+
+lemmatizer = WordNetLemmatizer()
+
+tokens = [
+    lemmatizer.lemmatize(token)
+    for token in tokens
+]
+
+return " ".join(tokens)
+
+── Load dataset ──────────────────────────────────────────────────────────────
+
+data_path = "./Data/Medical_reports(IBD-NonIBD).xlsx"
+
 report = pd.read_excel(data_path)
 
-# Drop missing values
 report = report.dropna()
 
-# Clean the 'Report' column
+print("\nOriginal dataset:")
+print(report['IBD'].value_counts())
+
+── Clean reports ─────────────────────────────────────────────────────────────
+
 report['Cleaned_Report'] = report['Report'].apply(cleaner)
-# Remove rows with cleaned reports of length 0
-report = report[report['Cleaned_Report'].map(len) > 0]
 
-# Remove the original 'Report' column as it's no longer needed
-report.drop(['Report'], axis=1, inplace=True)
+report = report[
+report['Cleaned_Report'].map(len) > 0
+]
 
-#------------------------------------------------------------------------------------------------------
-# Prepare the dataset for model training
-data = report['Cleaned_Report']  # Features
-Y = report['IBD']  # Target column
+── Prepare features and labels ───────────────────────────────────────────────
 
-# TF-IDF Vectorization
-tfidf = TfidfVectorizer(min_df=0.00015, ngram_range=(1, 3))
-tfidf.fit(data)  # Fit the vectorizer on the dataset
-data_tfidf = tfidf.transform(data)  # Transform the text into TF-IDF values
+data = report['Cleaned_Report']
+Y = report['IBD']
 
-# Save TF-IDF vectorizer for later use
+print("\nClass distribution:")
+print(Y.value_counts())
+
+── TF-IDF ────────────────────────────────────────────────────────────────────
+
+tfidf = TfidfVectorizer(
+min_df=0.00015,
+ngram_range=(1, 3)
+)
+
+data_tfidf = tfidf.fit_transform(data)
+
 joblib.dump(tfidf, 'tfidf.pkl')
 
-#------------------------------------------------------------------------------------------------------
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(data_tfidf, Y, test_size=0.2, random_state=42)
+── Train/test split ──────────────────────────────────────────────────────────
 
-# Handle class imbalance using SMOTE
+X_train, X_test, y_train, y_test = train_test_split(
+data_tfidf,
+Y,
+test_size=0.2,
+random_state=42,
+stratify=Y
+)
+
+print("\nTraining class distribution before SMOTE:")
+print(y_train.value_counts())
+
+── Handle class imbalance ───────────────────────────────────────────────────
+
 sm = SMOTE(random_state=42)
-X_train_sm, y_train_sm = sm.fit_resample(X_train, y_train)
 
-#------------------------------------------------------------------------------------------------------
-# Train a Naive Bayes classifier
-svm_clf = svm.SVC(kernel='linear', C=1)
+X_train_sm, y_train_sm = sm.fit_resample(
+X_train,
+y_train
+)
 
-# Fit the model on the oversampled training data
-svm_clf.fit(X_train_sm, y_train_sm)
+print("\nTraining class distribution after SMOTE:")
+print(y_train_sm.value_counts())
 
-# Save the trained model for later use
-joblib.dump(svm_clf, 'svm_clf.pkl')
+── Train SVM ─────────────────────────────────────────────────────────────────
 
-#------------------------------------------------------------------------------------------------------
-# Evaluate the model performance
-train_accuracy = svm_clf.score(X_train_sm, y_train_sm)
-test_accuracy = svm_clf.score(X_test, y_test)
+svm_clf = svm.SVC(
+kernel='linear',
+C=1
+)
 
-# Print training and testing accuracy
-print("Training accuracy:", round(train_accuracy, 2))
-print("Testing accuracy:", round(test_accuracy, 2))
+svm_clf.fit(
+X_train_sm,
+y_train_sm
+)
+
+── Save model ────────────────────────────────────────────────────────────────
+
+joblib.dump(
+svm_clf,
+'svm_clf.pkl'
+)
+
+── Evaluation ────────────────────────────────────────────────────────────────
+
+train_predictions = svm_clf.predict(X_train_sm)
+test_predictions = svm_clf.predict(X_test)
+
+print("\nModel classes:")
+print(svm_clf.classes_)
+
+print("\nTraining accuracy:")
+print(round(
+accuracy_score(y_train_sm, train_predictions),
+4
+))
+
+print("\nTesting accuracy:")
+print(round(
+accuracy_score(y_test, test_predictions),
+4
+))
+
+print("\nClassification report:")
+print(
+classification_report(
+y_test,
+test_predictions
+)
+)
+
+print("\nConfusion matrix:")
+print(
+confusion_matrix(
+y_test,
+test_predictions
+)
+)
+
+print("\nModel and TF-IDF vectorizer saved successfully.")
