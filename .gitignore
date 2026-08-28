@@ -2,17 +2,19 @@
 __pycache__/
 *.py[cod]
 *.pyo
+
+# Virtual environments
 .env
 venv/
 .venv/
 
-# Uploads (temporary files, not committed)
+# Temporary uploads
 uploads/
 
-# NLTK data (downloaded at runtime)
+# NLTK downloaded data
 nltk_data/
 
-# Data (medical reports are private)
+# Private training data
 Data/
 
 # OS
