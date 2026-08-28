@@ -16,15 +16,15 @@ import joblib
 
 Download required NLTK resources
 
-nltk.download('punkt')
-nltk.download('punkt_tab')
-nltk.download('stopwords')
-nltk.download('wordnet')
+nltk.download("punkt")
+nltk.download("punkt_tab")
+nltk.download("stopwords")
+nltk.download("wordnet")
 
-Text cleaning function
+Clean medical report text
 
 def cleaner(report):
-soup = BeautifulSoup(report, 'lxml')
+soup = BeautifulSoup(report, "lxml")
 text = soup.get_text()
 
 text = re.sub(
@@ -40,13 +40,13 @@ text = re.sub(
 )
 
 tokens = nltk.word_tokenize(text)
-
 tokens = [token.lower() for token in tokens]
 
-stop_words = set(stopwords.words('english'))
+stop_words = set(stopwords.words("english"))
 
 tokens = [
-    token for token in tokens
+    token
+    for token in tokens
     if token not in stop_words
 ]
 
@@ -68,25 +68,25 @@ report = pd.read_excel(data_path)
 report = report.dropna()
 
 print("\nOriginal dataset:")
-print(report['IBD'].value_counts())
+print(report["IBD"].value_counts())
 
 Clean reports
 
-report['Cleaned_Report'] = report['Report'].apply(cleaner)
+report["Cleaned_Report"] = report["Report"].apply(cleaner)
 
 report = report[
-report['Cleaned_Report'].map(len) > 0
+report["Cleaned_Report"].map(len) > 0
 ]
 
 Prepare features and labels
 
-data = report['Cleaned_Report']
-Y = report['IBD']
+data = report["Cleaned_Report"]
+Y = report["IBD"]
 
 print("\nClass distribution:")
 print(Y.value_counts())
 
-TF-IDF
+TF-IDF vectorization
 
 tfidf = TfidfVectorizer(
 min_df=0.00015,
@@ -95,9 +95,9 @@ ngram_range=(1, 3)
 
 data_tfidf = tfidf.fit_transform(data)
 
-joblib.dump(tfidf, 'tfidf.pkl')
+joblib.dump(tfidf, "tfidf.pkl")
 
-Train/test split
+Split data into training and testing sets
 
 X_train, X_test, y_train, y_test = train_test_split(
 data_tfidf,
@@ -122,10 +122,10 @@ y_train
 print("\nTraining class distribution after SMOTE:")
 print(y_train_sm.value_counts())
 
-Train SVM
+Train linear SVM
 
 svm_clf = svm.SVC(
-kernel='linear',
+kernel="linear",
 C=1
 )
 
@@ -134,32 +134,40 @@ X_train_sm,
 y_train_sm
 )
 
-Save model
-
-joblib.dump(
-svm_clf,
-'svm_clf.pkl'
-)
-
-Evaluation
-
-train_predictions = svm_clf.predict(X_train_sm)
-test_predictions = svm_clf.predict(X_test)
+Print model classes
 
 print("\nModel classes:")
 print(svm_clf.classes_)
 
+Save trained model
+
+joblib.dump(
+svm_clf,
+"svm_clf.pkl"
+)
+
+Make predictions
+
+train_predictions = svm_clf.predict(X_train_sm)
+test_predictions = svm_clf.predict(X_test)
+
+Evaluate model
+
+train_accuracy = accuracy_score(
+y_train_sm,
+train_predictions
+)
+
+test_accuracy = accuracy_score(
+y_test,
+test_predictions
+)
+
 print("\nTraining accuracy:")
-print(round(
-accuracy_score(y_train_sm, train_predictions),
-4
-))
+print(round(train_accuracy, 4))
 
 print("\nTesting accuracy:")
-print(round(
-accuracy_score(y_test, test_predictions),
-4
-))
+print(round(test_accuracy, 4))
 
 print("\nClassification report:")
 print(
