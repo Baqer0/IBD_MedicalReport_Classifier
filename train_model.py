@@ -8,27 +8,22 @@ from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn import svm
-from sklearn.metrics import (
-accuracy_score,
-classification_report,
-confusion_matrix
-)
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
 from imblearn.over_sampling import SMOTE
 
 import joblib
 
-── NLTK resources ────────────────────────────────────────────────────────────
+Download required NLTK resources
 
 nltk.download('punkt')
 nltk.download('punkt_tab')
 nltk.download('stopwords')
 nltk.download('wordnet')
 
-── Text cleaning ─────────────────────────────────────────────────────────────
+Text cleaning function
 
 def cleaner(report):
-
 soup = BeautifulSoup(report, 'lxml')
 text = soup.get_text()
 
@@ -46,16 +41,12 @@ text = re.sub(
 
 tokens = nltk.word_tokenize(text)
 
-tokens = [
-    token.lower()
-    for token in tokens
-]
+tokens = [token.lower() for token in tokens]
 
 stop_words = set(stopwords.words('english'))
 
 tokens = [
-    token
-    for token in tokens
+    token for token in tokens
     if token not in stop_words
 ]
 
@@ -68,7 +59,7 @@ tokens = [
 
 return " ".join(tokens)
 
-── Load dataset ──────────────────────────────────────────────────────────────
+Load dataset
 
 data_path = "./Data/Medical_reports(IBD-NonIBD).xlsx"
 
@@ -79,7 +70,7 @@ report = report.dropna()
 print("\nOriginal dataset:")
 print(report['IBD'].value_counts())
 
-── Clean reports ─────────────────────────────────────────────────────────────
+Clean reports
 
 report['Cleaned_Report'] = report['Report'].apply(cleaner)
 
@@ -87,7 +78,7 @@ report = report[
 report['Cleaned_Report'].map(len) > 0
 ]
 
-── Prepare features and labels ───────────────────────────────────────────────
+Prepare features and labels
 
 data = report['Cleaned_Report']
 Y = report['IBD']
@@ -95,7 +86,7 @@ Y = report['IBD']
 print("\nClass distribution:")
 print(Y.value_counts())
 
-── TF-IDF ────────────────────────────────────────────────────────────────────
+TF-IDF
 
 tfidf = TfidfVectorizer(
 min_df=0.00015,
@@ -106,7 +97,7 @@ data_tfidf = tfidf.fit_transform(data)
 
 joblib.dump(tfidf, 'tfidf.pkl')
 
-── Train/test split ──────────────────────────────────────────────────────────
+Train/test split
 
 X_train, X_test, y_train, y_test = train_test_split(
 data_tfidf,
@@ -119,7 +110,7 @@ stratify=Y
 print("\nTraining class distribution before SMOTE:")
 print(y_train.value_counts())
 
-── Handle class imbalance ───────────────────────────────────────────────────
+Handle class imbalance
 
 sm = SMOTE(random_state=42)
 
@@ -131,7 +122,7 @@ y_train
 print("\nTraining class distribution after SMOTE:")
 print(y_train_sm.value_counts())
 
-── Train SVM ─────────────────────────────────────────────────────────────────
+Train SVM
 
 svm_clf = svm.SVC(
 kernel='linear',
@@ -143,14 +134,14 @@ X_train_sm,
 y_train_sm
 )
 
-── Save model ────────────────────────────────────────────────────────────────
+Save model
 
 joblib.dump(
 svm_clf,
 'svm_clf.pkl'
 )
 
-── Evaluation ────────────────────────────────────────────────────────────────
+Evaluation
 
 train_predictions = svm_clf.predict(X_train_sm)
 test_predictions = svm_clf.predict(X_test)
