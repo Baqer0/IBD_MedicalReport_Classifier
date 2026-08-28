@@ -8,7 +8,5 @@ services:
     systemPackages:
       - tesseract-ocr
     envVars:
-      - key: FLASK_ENV
-        value: production
       - key: TESSERACT_PATH
         value: /usr/bin/tesseract
