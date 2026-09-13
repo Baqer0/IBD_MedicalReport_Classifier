@@ -3,8 +3,14 @@ services:
     name: IBD-Medical-Report-Classifier
     runtime: python
     plan: free
+
     buildCommand: "pip install -r requirements.txt && chmod +x install_tesseract.sh && ./install_tesseract.sh"
+
     startCommand: "gunicorn app:app"
+
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+
       - key: TESSERACT_PATH
-        value: /usr/local/bin/tesseract
+        value: /usr/bin/tesseract
