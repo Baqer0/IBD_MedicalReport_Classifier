@@ -1,10 +1,8 @@
 #!/bin/bash
 set -e
 
-TESSERACT_DIR="/usr/local/bin"
-
 if command -v tesseract >/dev/null 2>&1; then
-    echo "Tesseract already installed:"
+    echo "Tesseract already installed"
     tesseract --version
     exit 0
 fi
